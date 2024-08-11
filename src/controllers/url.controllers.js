@@ -6,13 +6,18 @@ const URL = require('../models/url.models.js')
 
 
 
+//http://localhost:3000/url
 async function handleGenerateUrl(req, res) {
-
     try {
-        const body = req.body;
-        if (!body.url) return res.status(404).json({
-            message: 'No redirect URL provided.'
-        })
+
+        const body = req.body
+        
+        if (!body.url) {
+            return res.json({
+                message: 'Please Provide a url.',
+                link:body.url
+            })
+        }
 
         let shortID = uid.rnd();
         await URL.create({
@@ -21,19 +26,30 @@ async function handleGenerateUrl(req, res) {
             visit: []
         })
 
+
+        const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}/${shortID}`;
+        //"http://localhost:3000/url/n9Xi6x"
+
         return res.json({
-            message: 'ShortID created successfully!',
-            shortID: shortID
+            message: 'shortlink created successfully!',
+            link: fullUrl,
         })
+
+
+
     } catch (error) {
         console.log(error);
     }
 
 }
 
+//http://localhost:3000/url/:shortId
 async function GenerateFinalURl(req, res) {
     const shortId = req.params.shortId
-    const url = await URL.findOneAndUpdate(
+
+    if (!shortId) return res.json({ message: "shortId is required with params" })
+
+    let url = await URL.findOneAndUpdate(
         { shortId },
         {
             $push: {
@@ -41,7 +57,11 @@ async function GenerateFinalURl(req, res) {
             }
         }
     )
-    return res.redirect(url.redirectUrl)
+
+    if (!url || !url.redirectUrl) return res.json({ message: "not redirect url found" });
+
+    // res.redirect work with http , alway remember on your link
+    return res.redirect(`https://${url.redirectUrl}`);
 
 }
 
@@ -49,9 +69,9 @@ async function GenerateFinalURl(req, res) {
 async function analyticsData(req, res) {
     try {
         const shortId = req.params.shortId
-        if (!shortId) return resjson({ message: "Please enter shortId" })
+        if (!shortId) return res.json({ message: "Please enter shortId" })
         const data = await URL.findOne({ shortId })
-        const Analytics = [ {totalClicks: data.visit.length} , {clickedTimeData: data.visit }]
+        const Analytics = [{ totalClicks: data.visit.length }, { clickedTimeData: data.visit }]
         return res
             .status(200)
             .json({
@@ -66,8 +86,12 @@ async function analyticsData(req, res) {
 
 }
 
+
 module.exports = {
     handleGenerateUrl,
     GenerateFinalURl,
     analyticsData
 }
+
+
+// Fix Redirect URL PROBLEM -

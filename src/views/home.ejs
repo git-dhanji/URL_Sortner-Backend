@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>url encoder by : ejs</title>
+</head>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        height: 100%;
+        width: 100%;
+    }
+
+    .light {
+        background: rgb(231, 255, 255);
+    }
+
+    .dark {
+        background-color: rgb(17, 15, 15);
+    }
+
+    .text-sor {
+        color: teal;
+        font-size: 4rem;
+        text-transform: uppercase;
+        margin-top: 10vh;
+        padding: 5px 10px;
+        border: 3px solid teal;
+    }
+
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .max-width {
+        max-width: 1244px;
+        margin: 0 auto;
+    }
+
+    .form {
+        display: flex;
+        justify-content: center;
+        position: relative;
+        border: 3px solid teal;
+        width: 50%;
+        margin-top: 50px;
+        height: auto;
+        border-radius: 3px;
+        overflow: hidden;
+
+        >.url_input {
+            height: 100%;
+            width: 100%;
+            outline: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+        }
+
+        >.generate_btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 20%;
+            cursor: pointer;
+            color: rgb(20, 18, 18);
+            font-size: 1.3rem;
+            outline: none;
+        }
+
+        >.generate_btn:hover {
+            opacity: 0.8;
+        }
+
+    }
+
+    .url_data_box {
+        margin-top: 40px;
+        border: 2px solid teal;
+        border-radius: 6px;
+        /* background: rgb(29, 24, 24); */
+        height: auto;
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        display: flex;
+        justify-content: start;
+        align-items: center;
+    }
+
+    .links-text {
+        height: 100%;
+        width: 80%;
+        font-size: 1.3rem;
+        padding: 5px 10px;
+        color: rgb(255, 255, 255);
+    }
+
+    .copy_btn {
+        height: 100%;
+        width: 20%;
+        text-align: center;
+        font-size: 1.3rem;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .valid{
+        color: teal;
+        font-size: 1.2rem;
+        text-align: center;
+        margin-top: 20px;
+    }
+</style>
+
+<body class="dark">
+    <div class="max-width">
+        <div class="center">
+            <h1 class="text-sor">
+                url sortner
+            </h1>
+        </div>
+        <div class="valid">
+            please give valid url like : www.example.com
+        </div>
+        <div class="center">
+            <form class="form">
+                <input type="text" name="url" id="url_input" class="url_input">
+                <button type="submit" class="generate_btn">Generate</button>
+            </form>
+        </div>
+        <div class="center">
+        </div>
+
+        <div class="url_data_box">
+            <div class="links-text" id="urlText">your url is here </div>
+            <button type="button" class="copy_btn" id="copy">copy url</button>
+        </div>
+    </div>
+
+</body>
+<script>
+
+    document.getElementById('copy').addEventListener('click', copyURL);
+    function copyURL() {
+
+        // Get the text inside the "links-text" div
+        const urlText = document.getElementById('urlText').innerText;
+
+        // Create a temporary textarea element to hold the text
+        const tempInput = document.createElement('textarea');
+        tempInput.value = urlText;
+
+        // Append the textarea to the body (required for the copy command to work)
+        document.body.appendChild(tempInput);
+
+        // Select the text inside the textarea
+        tempInput.select();
+
+        // Copy the selected text to the clipboard
+        document.execCommand('copy');
+
+        // Remove the temporary textarea element from the DOM
+        document.body.removeChild(tempInput);
+
+        // Optionally, provide feedback to the user
+        alert("URL copied to clipboard: " +  urlText );
+    }
+
+    function generateURl() {
+        document.querySelector('.generate_btn').addEventListener('click', async (event) => {
+            event.preventDefault();
+            var url = document.querySelector('.url_input').value;
+            let link = document.querySelector('.links-text');
+            link.textContent = "";
+            const response = await fetch('/url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url })
+            });
+
+            const result = await response.json();
+            link.textContent = result.link
+            document.querySelector('.url_input').value = ''
+        });
+    }
+    generateURl();
+
+
+</script>
+
+</html>
